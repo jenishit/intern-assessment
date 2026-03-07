@@ -1,0 +1,39 @@
+Authentication and Security
+-> Moderan APIs need login system. Most systems today use JWT tokens.
+A JWT token is like a temporary digital passport that proves a user is authenticated
+FastAPI commonly uses:
+a. JSON Web token
+b. Passlib
+c. python-jose
+
+pip install python-jose passlib[bcrypt] python-multipart
+
+Pasword Hashing
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemas=["bcrypt"], deprecated="auto")
+
+def hash_password(password: str):
+    return pwd_context.hash(password)
+
+def verify_password(plain, hashed):
+    return pwd_context.verify(plain, hashed)
+
+Creating JWT tokens
+from jose import JWT
+from datetime import datetime, timedelta
+
+SECRET_KEY = "mysecretkey"
+ALGORITHM = "HS256"
+
+Create Token Function
+def create_access_token(data: dict, expires_delta: timedelta)
+    to_encode = data.copy()
+    expire = datetime.utcnow() + expires_delta
+
+    to_encode.update({"exp": expire})
+
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+    return encoded_jwt
+
