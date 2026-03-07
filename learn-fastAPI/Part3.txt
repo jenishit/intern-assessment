@@ -1,0 +1,110 @@
+1. Response Models
+It defines the structure of data returned by the API
+Uses:
+a. Filters sensitive data
+b. Ensures consistent output
+c. Generates accurate API documentation
+
+Without response model, sensitive data are exposed. For example
+@app.get("/user")
+def get_user():
+    return {
+        "username": "jenish",
+        "password": "secret123"
+    }
+
+but using response Models
+from pydantic import BaseModel
+
+class UserResponse(BaseModel):
+    username: str
+
+@app.get("/user", response_model=UserResponse)
+def get_user():
+    return {
+        "username": "jenish",
+        "password": "secret123"
+    }
+
+response becomes -> { "username": "jenish" } => extra fields are automatically removed
+
+2. Status Codes
+Code        Meaning
+200         Success
+201         Created
+400         Bad request
+404         Not found
+500         Server error
+
+@app.post("/items", status_code=status.HTTP_201_CREATED)
+def create_item():
+    return {"message": "Item created"}
+
+3. Error Handling
+-> FastAPI provides built-in error handling using HTTPException
+    from fastapi import HTTPException
+
+    items = {"1": "Laptop", "2": "Phone"}
+    @app.get("/items/{item_id}")
+    def read_item(item_id: str):
+        if item_id not in items:
+            raise HTTPException(
+                status_code = 404,
+                detail = "Item not found"
+            )
+        return {"item": items[item_id]}
+
+request: GET /items/5
+Response: { "detail":"Item not found" }
+
+4. Dependency Injection
+-> Dependecny is a function that runs before the main request function.
+Useful for:
+a. Authenticatiojn
+b. Database connections
+c. Logging
+d. Valdiation
+
+Basic Example:
+from fastapi import Depends
+
+def common_parameters():
+    return {"limit": 10}
+
+@app.get("/products")
+def get_products(params: dict = Depends(common_parameters)):
+    return params
+
+Response: { "limit": 10 }
+
+Dependency with Query Parameters
+def pagination(skip: int = 0, limit: int = 10):
+    return {"skip": skip, "limit": limit}
+
+@app.get("/items")
+def get_items(pagination_data: dict = Depends(pagination)):
+    return pagination_data
+
+Request: /items?skip=5&limit=20
+Response: {
+ "skip":5,
+ "limit":20
+}
+
+5. API Metadata
+FastAPI allows customizing API documentation
+app =FastAPI(
+    title="My API",
+    description="API for myself"
+    version="1.0.0"
+)
+
+6. Path Operation Metadata
+For documentation of each endpoint
+@app.get("/items",
+    summary="Get all items",
+    description= "Returns a list of all items in the table"
+)
+def get_items():
+    return ["item1", "item2"]
+

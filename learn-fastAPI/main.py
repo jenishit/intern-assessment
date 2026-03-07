@@ -1,6 +1,15 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 
-app =FastAPI()
+app = FastAPI()
+
+class Item(BaseModel):
+    name: str
+    price: float
+
+@app.post("/items")
+def create_item(item: Item):
+    return item
 
 @app.get("/") #This is HTTP method GET with URL /
 def read_root():
